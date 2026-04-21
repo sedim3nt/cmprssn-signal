@@ -1,10 +1,33 @@
 # CMPRSSN Signal Agent — Operator Guide
 
-A zero-cost Telegram signal bot. Polls ~100 agentic-era thought leaders and AI-native companies across X, Bluesky, and RSS (Substack / YouTube / blogs); scores each post through a two-stage gate (engagement + Claude qualitative); routes the survivors into 5 Telegram topic channels; and posts a stats digest to a 6th admin channel after every run.
+A zero-cost signal bot. Polls ~100 sources across X, Bluesky, and RSS (Substack / YouTube / blogs); scores each post through a two-stage gate (engagement + LLM qualitative); routes the survivors into themed channels; and posts a stats digest after every run.
+
+**This is a template, not a fixed product.** The reference deploy monitors 100 agentic-era thought leaders for the CMPRSSN community, routing into 5 themed Telegram topics (pulse / compression / codebook / frontier / onchain) scored against the Agentic Stack framework (L0–L8). But every major component is swappable — see [What's Interchangeable](#whats-interchangeable) below.
 
 > **1-page summary**: `SUMMARY.md`
 > **For an AI agent deploying this**: `AGENT.md`
 > **Env template**: `.env.example` (copy to `.env`)
+
+---
+
+## What's Interchangeable
+
+The agent is a pipeline of isolated modules. Each row below is a first-class swap point — change the component, keep the rest.
+
+| Component | Default | File(s) to edit | Examples of swaps |
+|---|---|---|---|
+| **Monitored sources** | 100 agentic-era thought leaders + companies | `individuals.csv` · `companies.csv` | Any domain: climate policy, DeFi founders, biotech researchers, sports analysts, LP/GP networks. Drop in your own rows, rerun `build_handles.py`. |
+| **Themed channels** | 5 topics tied to the Agentic Stack | `.env` topic IDs · `agent/src/prompts/signal_score.md` routing rules · `agent/src/publish/format.py` emoji map | Any number of themes. A climate deploy might route to `#policy`, `#science`, `#deployment`, `#finance`. Define your own taxonomy. |
+| **Scoring framework** | CMPRSSN Agentic Stack L0–L8 thesis | `agent/src/prompts/signal_score.md` | Replace the prompt with any taxonomy — ESG layers, investment theses, technical domains, custom rubrics. The LLM obeys whatever rubric the prompt defines. |
+| **LLM** | Claude CLI (local subprocess, $0 inference) | `agent/src/score/qualitative.py` | Any CLI or API: OpenAI, Gemini, Ollama for local models, direct Anthropic API, or a self-hosted model. One file changes. |
+| **Ingest sources** | X API v2 · Bluesky · RSS (Substack/YouTube/blogs) | `agent/src/ingest/*.py` | Add Mastodon · Farcaster · Nostr · Hacker News · Medium · podcasts. Each source is an independent module returning `Post` objects. |
+| **Publishing destination** | Telegram (5 topic threads + 1 admin) | `agent/src/publish/telegram.py` | Discord, Slack, email digest, webhook, RSS output, a private web dashboard. The publisher is a single ~40-line module. |
+| **Signal thresholds** | `MIN_QUAL_SCORE=6`, `MAX_POSTS_PER_RUN=15`, etc. | `.env` | All knobs are env-overridable — no code changes needed. |
+| **Cadence** | 4×/day (6am, noon, 6pm, midnight) | `agent/deploy/com.cmprssn.signal.plist` | Hourly, weekly, on-demand, event-driven. macOS `launchd` · Linux cron / systemd · Docker / k8s cronjob. |
+| **Host** | Mac mini + launchd | — | Any Linux VPS, Raspberry Pi, Docker container, serverless scheduled function. |
+| **Storage** | SQLite (single file) | `agent/src/store.py` | Postgres for multi-tenant / shared dashboard deploys. Schema is ~30 lines. |
+
+**What this means for a new deploy:** pick a thesis (agentic ops, climate, DeFi, whatever), swap the CSVs, edit the scoring prompt, set up destination channels, and you have a domain-specialized signal bot. The harness is the product; the CMPRSSN instance is one configuration of it.
 
 ---
 

@@ -2,7 +2,9 @@
 
 ## What it is
 
-A self-hosted Telegram bot that surfaces high-signal posts from ~100 agentic-era thought leaders and AI-native companies into a CMPRSSN practitioner community.
+A self-hosted signal bot that surfaces high-signal posts from a curated list of sources into themed community channels.
+
+The reference deploy monitors ~100 agentic-era thought leaders for the CMPRSSN practitioner community, but **every major component is swappable** — the bot is a retargetable template, not a fixed product. See *"Retargetable for any domain"* below.
 
 ## What it does
 
@@ -73,3 +75,19 @@ The only ongoing variable cost is X API credits, which scale with poll frequency
 - Edit CSVs to add/remove handles → re-run `build_handles.py`
 - Tune the qualitative score threshold in `.env` if signal volume drifts
 - That's it. No daily ops.
+
+## Retargetable for any domain
+
+The CMPRSSN deployment is a *reference configuration*. The bot itself is a retargetable harness — nine first-class swap points, listed in `README.md` under "What's Interchangeable":
+
+| Swap | From → To examples |
+|---|---|
+| Monitored sources | ~100 agentic-era leaders → climate, DeFi, biotech, sports, CRE, any domain |
+| Themed channels | 5 Agentic Stack topics → any taxonomy (policy / science / finance / etc.) |
+| Scoring framework | CMPRSSN L0–L8 → ESG layers, investment theses, custom rubrics |
+| LLM | Claude CLI → OpenAI / Gemini / Ollama (local) / any API |
+| Ingest sources | X + Bluesky + RSS → add Mastodon, Farcaster, HN, Medium, podcasts |
+| Publishing destination | Telegram → Discord, Slack, email digest, webhook, web dashboard |
+| Cadence · Host · Storage · Thresholds | all configurable |
+
+**For a new client, the deploy plan is:** swap the CSVs, edit one prompt file, set up destination channels, run the wizard. Domain-specialized in under an hour.

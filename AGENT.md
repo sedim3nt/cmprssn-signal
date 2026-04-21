@@ -412,3 +412,203 @@ phase_description: "X + Bluesky + RSS ingest, scored + ranked + capped, digest c
 phase_3_planned: "Interactive Q&A bot (Telegram listener) + cross-platform dedup"
 last_updated: "2026-04-21"
 ```
+
+---
+
+## 12. Component swap points (retargeting contract)
+
+The bot is a retargetable harness. Each swap below is a scoped contract — change the listed files, keep everything else intact.
+
+### 12.1 Monitored sources
+
+```yaml
+what: "Replace the 100 reference handles with any domain's sources."
+files:
+  - individuals.csv     # tier + X handle + RSS feed + role + signal note
+  - companies.csv       # X handle + platforms + RSS feed + case-study value
+post_edit:
+  - run: "agent/scripts/build_handles.py"
+  - result: "regenerates agent/data/handles.json"
+shape_preserved:
+  - columns: see header rows; at minimum Name, X Handle, RSS Feed
+  - optional fields (Tier, Role, Signal Note) are read into Handle and can inform scoring
+disabled_handles:
+  - edit: "DISABLED_SLUGS set in agent/scripts/build_handles.py"
+bluesky_handles:
+  - edit: "BSKY_MAP dict in agent/scripts/build_handles.py (slug → bsky handle)"
+```
+
+### 12.2 Themed channels (routing taxonomy)
+
+```yaml
+what: "Replace the 5 topic set with any number of themes."
+files:
+  - .env                                          # add/remove TELEGRAM_CMPRSSN_TOPIC_<NAME>
+  - agent/src/config.py                           # add field to Config + topic_for() mapping
+  - agent/src/prompts/signal_score.md             # rewrite routing rules + examples
+  - agent/src/publish/format.py                   # THREAD_EMOJI dict: topic → emoji
+  - agent/src/publish/digest.py                   # TOPIC_EMOJI dict (mirror of format.py)
+constraint: "Topic names are free-form strings; match them consistently across all 5 files."
+```
+
+### 12.3 Scoring framework
+
+```yaml
+what: "Replace the CMPRSSN Agentic Stack (L0–L8) rubric with any taxonomy."
+files:
+  - agent/src/prompts/signal_score.md             # the prompt is the rubric
+expected_llm_output_shape:
+  type: json
+  schema:
+    relevant: bool
+    score: int    # 0–10
+    topic: string # must match one of your topics
+    layers: string[]
+    reason: string
+no_code_change: "The parser is schema-flexible — if you change layer names from L0–L8 to other tags, the code still works."
+```
+
+### 12.4 LLM backend
+
+```yaml
+what: "Replace the local claude CLI subprocess with any LLM."
+files:
+  - agent/src/score/qualitative.py                # swap the subprocess call
+contract:
+  input: "Post text + prompt template + handle context"
+  output: "JSON matching the Verdict dataclass (relevant, score, topic, layers, reason)"
+swap_examples:
+  - "OpenAI CLI: subprocess to `openai api chat.completions.create`"
+  - "Ollama local: subprocess to `ollama run <model>`"
+  - "Anthropic API direct: httpx POST to api.anthropic.com (requires ANTHROPIC_API_KEY)"
+  - "Gemini CLI: subprocess to `gemini`"
+cost_implication: "Claude CLI is $0 (covered by subscription). API swaps add per-call cost."
+env_var: "CLAUDE_CMD=<cmd> overrides the binary name; timeout via CLAUDE_TIMEOUT_S"
+```
+
+### 12.5 Ingest sources
+
+```yaml
+what: "Add/remove platforms."
+files:
+  - agent/src/ingest/*.py                         # one module per platform
+  - agent/src/orchestrator.py                     # wire new source into run_once()
+  - agent/src/handles.py                          # add a filter helper (e.g., mastodon_handles())
+contract_per_module:
+  function_signature: "fetch_recent(cfg: Config, handles: list[Handle], ...) -> list[Post]"
+  must_return: "Post dataclass with platform, platform_id (unique per entry), text, url, created_at"
+  failure_mode: "log warning, return [] — do NOT raise (would abort the run)"
+examples_of_new_sources:
+  - mastodon   # ActivityPub public timeline API
+  - farcaster  # Neynar / Warpcast API
+  - hackernews # Algolia HN API
+  - medium     # RSS per author (already partially supported via rss.py)
+  - youtube    # already supported via rss.py with channel_id feed
+```
+
+### 12.6 Publishing destination
+
+```yaml
+what: "Send to somewhere other than Telegram."
+files:
+  - agent/src/publish/telegram.py                 # the single publisher module
+  - agent/src/orchestrator.py                     # if signature changes, update call sites
+contract:
+  function_signature: "send(cfg, topic, text) -> (ok: bool, message_id: int|None, error: str)"
+swap_examples:
+  - "Discord: webhook POST to discord.com/api/webhooks/<id>/<token>"
+  - "Slack: chat.postMessage API with channel ID per topic"
+  - "Email: SMTP digest grouped by topic"
+  - "Web dashboard: POST to your own endpoint"
+digest_also_uses_publisher: "publish/digest.py builds text, orchestrator calls send(cfg, 'general', ...). Swap once, both work."
+```
+
+### 12.7 Signal thresholds
+
+```yaml
+what: "Tune signal volume and strictness without touching code."
+mechanism: "env vars only"
+overrides:
+  - MIN_QUAL_SCORE              # default 6; 0–10
+  - MAX_POSTS_PER_RUN           # default 15
+  - MAX_POSTS_PER_TOPIC_PER_RUN # default 5
+  - MIN_LIKES_FLOOR             # default 25
+  - MIN_LIKES_FLOOR_TIER3       # default 10
+  - ENGAGEMENT_RATIO_MIN        # default 0.001
+  - TWEETS_PER_HANDLE           # default 10
+  - RSS_MAX_ENTRIES             # default 5
+  - RSS_MAX_AGE_DAYS            # default 3
+```
+
+### 12.8 Cadence
+
+```yaml
+what: "Change when the bot runs."
+files:
+  - agent/deploy/com.cmprssn.signal.plist         # macOS launchd
+alternatives:
+  - cron         # crontab -e  →  0 6,12,18,0 * * * cd <repo>/agent && .venv/bin/python -m src.orchestrator
+  - systemd      # .service + .timer pair
+  - docker cron  # supercronic or cron inside a container
+  - k8s cronjob  # CronJob manifest
+  - event-driven # call orchestrator from a webhook / queue consumer
+```
+
+### 12.9 Storage
+
+```yaml
+what: "Move from single-file SQLite to a shared DB for multi-tenant deploys."
+files:
+  - agent/src/store.py                            # schema + connection management
+  - agent/src/config.py                           # DB_PATH → DB_URL
+migration:
+  - "Schema in SCHEMA string is standard SQL; works on Postgres/MySQL with minor type tweaks."
+  - "Use SQLAlchemy or raw psycopg if switching to Postgres; keep the upsert_post / mark_* API surface identical."
+```
+
+### 12.10 Host
+
+```yaml
+what: "Run anywhere with Python 3.11+ and outbound HTTPS."
+deployed_targets:
+  - mac_mini   # reference deploy (launchd)
+  - linux_vps  # cron or systemd
+  - raspberry_pi
+  - docker     # Dockerfile not provided; trivial — base on python:3.11-slim, COPY, install, CMD
+  - k8s        # as a CronJob
+```
+
+---
+
+## 13. Minimum viable retargeting (new domain in <1 hour)
+
+```yaml
+steps:
+  1_fork_and_clone:
+      - gh repo fork sedim3nt/cmprssn-signal
+      - git clone <fork>
+
+  2_replace_sources:
+      - edit individuals.csv and companies.csv (or replace entirely)
+      - keep column headers; only rows change
+
+  3_define_themes:
+      - create Telegram topics / Discord channels for your taxonomy
+      - record their IDs
+
+  4_rewrite_scoring_prompt:
+      - agent/src/prompts/signal_score.md
+      - state your thesis, define your topics, give high/low-signal examples
+      - specify JSON output with your topic names
+
+  5_update_code_maps:
+      - agent/src/config.py: add TELEGRAM_CMPRSSN_TOPIC_<NAME> fields + topic_for() mapping
+      - agent/src/publish/format.py + digest.py: emoji dicts
+      - (optional) scripts/build_handles.py: DISABLED_SLUGS, BSKY_MAP
+
+  6_configure_and_deploy:
+      - cp .env.example .env && edit
+      - python3 scripts/setup_wizard.py
+
+verification: "Run with --dry-run first. Inspect the scored output in logs before enabling publish."
+```

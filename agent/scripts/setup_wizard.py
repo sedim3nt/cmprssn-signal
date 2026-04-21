@@ -208,6 +208,13 @@ def main() -> None:
     print("  Dry-run:       cd agent && .venv/bin/python -m src.orchestrator --dry-run")
     print("  Push digest:   cd agent && .venv/bin/python scripts/push_digest_now.py")
     print()
+    print("  ─── This bot is a retargetable template ───")
+    print("  To point it at a different domain (climate, DeFi, biotech, etc.):")
+    print("    • Replace rows in individuals.csv / companies.csv")
+    print("    • Edit themes in agent/src/prompts/signal_score.md")
+    print("    • Map new topic IDs in .env + agent/src/config.py")
+    print("  Full swap-points contract: see AGENT.md §12.")
+    print()
 
 
 if __name__ == "__main__":
