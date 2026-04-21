@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd config for CMPRSSN Signal Bot.
+
+  To install:
+    cp deploy/com.cmprssn.signal.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.cmprssn.signal.plist
+
+  To stop:
+    launchctl unload ~/Library/LaunchAgents/com.cmprssn.signal.plist
+
+  IMPORTANT: edit the two absolute paths below (PYTHON + WorkingDirectory) to match your system.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.cmprssn.signal</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/spirittree/Documents/SetupVault/csv/agent/.venv/bin/python</string>
+        <string>-m</string>
+        <string>src.orchestrator</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/spirittree/Documents/SetupVault/csv/agent</string>
+
+    <!-- 4x/day: 6am, noon, 6pm, midnight -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>6</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>18</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>0</integer><key>Minute</key><integer>0</integer></dict>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>/Users/spirittree/Documents/SetupVault/csv/agent/logs/launchd.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/spirittree/Documents/SetupVault/csv/agent/logs/launchd.err.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+</dict>
+</plist>

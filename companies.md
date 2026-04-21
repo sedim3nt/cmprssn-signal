@@ -1,0 +1,24 @@
+# Companies — Agentic Era Reference List
+
+| # | Company | X Handle | Platforms | RSS Feed | RPE | Employees | ARR | Agentic Stack | Stack Type | Case Study Value |
+|---|---------|----------|-----------|----------|-----|-----------|-----|---------------|------------|-----------------|
+| T4-1 | Cognition (Devin) | @cognition_labs | cognition.ai/blog | | ~$1.35M | ~111 | $150M+ | L0–L8 | Autonomous systems | Recursive self-hosting loop, enterprise deployment at 30–40% PR coverage |
+| T4-2 | Midjourney | @midjourney | midjourney.com | | ~$20M | ~10 | $200M | L4–L8 | Autonomous systems | Upper bound of compression — $20M RPE, no external funding |
+| T4-3 | Cursor (Anysphere) | @cursor_ai | cursor.com/blog | | ~$5M | ~20 | $100M | L4–L8 | Autonomous systems | $100M ARR in 21 months with ~20 people |
+| T4-4 | Perplexity | @perplexity_ai | perplexity.ai/hub | | ~$1M | ~100 | $100M+ | L4–L8 | Autonomous systems | Scale benchmark at $100M+ ARR with ~100 employees |
+| T4-5 | Bolt (StackBlitz) | @boltdotnew | bolt.new, stackblitz.com/blog | | ~$1.3M | ~15 | $20M | L4–L8 | Autonomous systems | $20M ARR in 2 months with 15 people |
+| T4-6 | Polsia | @benbroca | polsia.com | | $3.5M | 1 | $3.5M | L5–L8 | Autonomous systems | Individual compression upper bound — $3.5M ARR solo |
+| T4-7 | Every.to | @every | every.to | https://every.to/feed | ~$500K–$1M | ~10–15 | N/A | L4–L8 | Autonomous systems | AI-native media archetype shipping full suite of AI products |
+| T4-8 | Levels Health | @levels | levelshealth.com/blog | https://levelshealth.com/blog/feed | ~$500K–$1M | ~50 | N/A | L3–L7 | Integrated workflows | Regulated industry archetype — HIPAA-compliant AI-native ops |
+| T4-9 | Klarna | @klarna | klarna.com/press | | N/A | ~3000 | N/A | L2–L7 | Integrated workflows | Enterprise recompression — 40% headcount reduction via AI |
+| T4-10 | Duolingo | @duolingo | blog.duolingo.com | https://blog.duolingo.com/rss/ | N/A | N/A | N/A | L2–L6 | Integrated workflows | Consumer company AI-first mandate archetype |
+| T4-11 | Shopify | @Shopify | shopify.com/blog, shopify.engineering | https://shopify.engineering/index.xml | N/A | 10000+ | $9B+ | L3–L6 | Integrated workflows | Enterprise codebook revision — 'prove AI can't do jobs' mandate |
+| T4-12 | Linear | @linear | linear.app/blog | | ~$2M | ~50 | ~$35M | L4–L7 | Integrated workflows | AI-native project management archetype |
+| T4-13 | Harvey | @harvey | harvey.ai | | ~$1M | ~100 | ~$100M | L4–L8 | Autonomous systems | Regulated industry (legal) archetype |
+| T4-14 | Ironclad | @ironclad_inc | ironcladapp.com/journal | | ~$500K | ~200 | ~$100M | L4–L7 | Integrated workflows | Legal tech archetype |
+| T4-15 | Glean | @glean | glean.com/blog | | ~$500K | ~500 | ~$250M | L4–L7 | Integrated workflows | Enterprise search archetype |
+| T4-16 | Writer | @getwriter | writer.com/blog | | ~$500K | ~200 | ~$100M | L4–L7 | Integrated workflows | Enterprise writing archetype |
+| T4-17 | Sierra | @SierraPlatform | sierra.ai | | ~$500K | ~200 | ~$100M | L4–L8 | Autonomous systems | Enterprise agent archetype — outcome-based pricing |
+| T4-18 | Replit | @replit | blog.replit.com | https://blog.replit.com/feed | ~$500K | ~100 | ~$50M | L4–L8 | Autonomous systems | AI-native coding platform archetype |
+| T4-19 | Notion | @NotionHQ | notion.com/blog | | ~$500K | ~500 | ~$250M | L4–L7 | Integrated workflows | AI-native productivity platform archetype |
+| T4-20 | Vercel | @vercel | vercel.com/blog | | ~$500K | ~500 | ~$250M | L4–L7 | Integrated workflows | AI-native deployment platform archetype |
