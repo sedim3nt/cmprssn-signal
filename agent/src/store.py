@@ -77,9 +77,17 @@ class Post:
     tg_message_id: int | None = None
 
 
+_initialized = False
+
+
 def init_db(path: Path = DB_PATH) -> None:
+    """Idempotent — only the first call actually runs the schema."""
+    global _initialized
+    if _initialized:
+        return
     with sqlite3.connect(path) as c:
         c.executescript(SCHEMA)
+    _initialized = True
 
 
 @contextmanager

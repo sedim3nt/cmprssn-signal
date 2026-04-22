@@ -47,5 +47,12 @@
         <key>PATH</key>
         <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
     </dict>
+
+    <!-- launchd processes default to 256 FDs; bump for SQLite + httpx churn -->
+    <key>SoftResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>4096</integer>
+    </dict>
 </dict>
 </plist>
