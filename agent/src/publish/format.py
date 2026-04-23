@@ -9,7 +9,7 @@ from ..store import Post
 def _signature() -> str:
     now = datetime.now(timezone.utc)
     ts = now.strftime("%b %-d %-I:%M") + now.strftime("%p").lower() + " UTC"
-    return f"— SignalCl · {ts}"
+    return f"— 🤖 SignalCl · {ts}"
 
 THREAD_EMOJI = {
     "pulse": "📡",
