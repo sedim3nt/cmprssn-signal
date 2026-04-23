@@ -54,28 +54,37 @@ def _render(post: Post, handle: Handle | None) -> str:
 
 
 def _call_claude(prompt: str) -> str:
+    import time
     # Strip CLAUDECODE so we don't trip the nested-session safeguard when
     # the orchestrator is itself launched from within a Claude Code session.
     env = os.environ.copy()
     env.pop("CLAUDECODE", None)
     env.pop("CLAUDE_CODE", None)
-    try:
-        proc = subprocess.run(
-            [CLAUDE_CMD, "-p", prompt, "--output-format", "text", "--model", "claude-opus-4-7"],
-            capture_output=True,
-            text=True,
-            timeout=CLAUDE_TIMEOUT_S,
-            env=env,
-        )
-        if proc.returncode != 0:
-            log.warning("claude cli nonzero exit %d: %s", proc.returncode, proc.stderr[:200])
-        return proc.stdout
-    except subprocess.TimeoutExpired:
-        log.error("claude cli timeout")
-        return ""
-    except FileNotFoundError:
-        log.error("claude CLI not found on PATH. Install Claude Code.")
-        return ""
+    for attempt in range(3):
+        if attempt:
+            wait = 15 * attempt
+            log.warning("claude cli retry %d/%d after %ds", attempt + 1, 3, wait)
+            time.sleep(wait)
+        try:
+            proc = subprocess.run(
+                [CLAUDE_CMD, "-p", prompt, "--output-format", "text", "--model", "claude-opus-4-7"],
+                capture_output=True,
+                text=True,
+                timeout=CLAUDE_TIMEOUT_S,
+                env=env,
+            )
+            if proc.returncode != 0:
+                log.warning("claude cli nonzero exit %d: %s", proc.returncode, proc.stderr[:200])
+            # Retry if transient error
+            if any(e in proc.stdout for e in _TRANSIENT_ERRORS):
+                continue
+            return proc.stdout
+        except subprocess.TimeoutExpired:
+            log.error("claude cli timeout")
+        except FileNotFoundError:
+            log.error("claude CLI not found on PATH. Install Claude Code.")
+            return ""
+    return proc.stdout if 'proc' in dir() else ""
 
 
 _JSON_RE = re.compile(r"\{.*\}", re.DOTALL)
