@@ -57,7 +57,7 @@ def _call_claude(prompt: str) -> str:
     env.pop("CLAUDE_CODE", None)
     try:
         proc = subprocess.run(
-            [CLAUDE_CMD, "-p", prompt, "--output-format", "text"],
+            [CLAUDE_CMD, "-p", prompt, "--output-format", "text", "--model", "claude-opus-4-7"],
             capture_output=True,
             text=True,
             timeout=CLAUDE_TIMEOUT_S,
