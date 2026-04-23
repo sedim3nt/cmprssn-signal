@@ -184,6 +184,58 @@ def pending_to_publish() -> list[sqlite3.Row]:
         ))
 
 
+def row_to_post(row: sqlite3.Row) -> Post:
+    import json as _j
+    layers: list[str] = []
+    if row["qualitative_layers"]:
+        try:
+            layers = _j.loads(row["qualitative_layers"])
+        except Exception:
+            pass
+    return Post(
+        id=row["id"],
+        platform=row["platform"],
+        platform_id=row["platform_id"],
+        author_handle=row["author_handle"],
+        author_slug=row["author_slug"],
+        author_followers=row["author_followers"],
+        text=row["text"],
+        url=row["url"],
+        likes=row["likes"],
+        retweets=row["retweets"],
+        replies=row["replies"],
+        created_at=row["created_at"],
+        fetched_at=row["fetched_at"],
+        passed_quant=bool(row["passed_quant"]),
+        quant_ratio=row["quant_ratio"],
+        qualitative_score=row["qualitative_score"],
+        qualitative_topic=row["qualitative_topic"],
+        qualitative_layers=layers,
+        qualitative_reason=row["qualitative_reason"],
+        qualitative_relevant=bool(row["qualitative_relevant"]) if row["qualitative_relevant"] is not None else None,
+        posted_to_tg=bool(row["posted_to_tg"]),
+        posted_topic=row["posted_topic"],
+        posted_at=row["posted_at"],
+        tg_message_id=row["tg_message_id"],
+    )
+
+
+def failed_qualitative(limit: int = 50) -> list[sqlite3.Row]:
+    """Posts that passed quant but got score=0 due to Claude CLI failure (Credit balance etc)."""
+    with conn() as c:
+        return list(c.execute(
+            """
+            SELECT * FROM posts
+            WHERE passed_quant=1 AND posted_to_tg=0
+              AND qualitative_score=0
+              AND qualitative_reason LIKE '%Credit balance%'
+            ORDER BY quant_ratio DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ))
+
+
 def recent_fetched(platform: str, since_iso: str) -> list[sqlite3.Row]:
     with conn() as c:
         return list(c.execute(

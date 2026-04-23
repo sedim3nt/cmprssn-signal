@@ -99,6 +99,14 @@ async def run_once(cfg: Config) -> dict:
     stats["quant_pass"] = len(passed_quant)
     log.info("%d posts passed quant gate", len(passed_quant))
 
+    # --- Rescore posts that previously failed due to Claude CLI session limit ---
+    for row in store_mod.failed_qualitative(limit=50):
+        p = store_mod.row_to_post(row)
+        h = slug_to_handle.get(p.author_slug) or screen_to_handle.get((p.author_handle or "").lower())
+        v = qualitative.score(p, h)
+        store_mod.mark_qualitative(p.id, v.relevant, v.score, v.topic, v.layers, v.reason)
+        log.info("rescore @%s score=%d rel=%s", p.author_handle, v.score, v.relevant)
+
     # --- Qualitative gate (Claude CLI) ---
     passed_qual: list[tuple] = []
     for p, h in passed_quant:
