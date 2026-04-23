@@ -104,6 +104,9 @@ async def run_once(cfg: Config) -> dict:
         p = store_mod.row_to_post(row)
         h = slug_to_handle.get(p.author_slug) or screen_to_handle.get((p.author_handle or "").lower())
         v = qualitative.score(p, h)
+        if v.transient_fail:
+            log.warning("rescore @%s still failing transiently, will retry next run", p.author_handle)
+            break  # if one fails, all will — stop burning attempts
         store_mod.mark_qualitative(p.id, v.relevant, v.score, v.topic, v.layers, v.reason)
         log.info("rescore @%s score=%d rel=%s", p.author_handle, v.score, v.relevant)
 
@@ -111,6 +114,9 @@ async def run_once(cfg: Config) -> dict:
     passed_qual: list[tuple] = []
     for p, h in passed_quant:
         v = qualitative.score(p, h)
+        if v.transient_fail:
+            log.warning("qual @%s transient failure (will retry next run): %s", p.author_handle, v.reason[:80])
+            continue
         store_mod.mark_qualitative(p.id, v.relevant, v.score, v.topic, v.layers, v.reason)
         log.info(
             "qual @%s score=%d rel=%s topic=%s :: %s",

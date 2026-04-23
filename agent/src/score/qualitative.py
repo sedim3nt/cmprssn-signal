@@ -9,7 +9,7 @@ import logging
 import os
 import re
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ..config import CLAUDE_CMD, CLAUDE_TIMEOUT_S, PROMPTS_DIR
 from ..handles import Handle
@@ -20,6 +20,9 @@ log = logging.getLogger(__name__)
 _PROMPT_TEMPLATE = (PROMPTS_DIR / "signal_score.md").read_text() if (PROMPTS_DIR / "signal_score.md").exists() else ""
 
 
+_TRANSIENT_ERRORS = ("Credit balance is too low", "rate limit", "overloaded")
+
+
 @dataclass
 class Verdict:
     relevant: bool
@@ -27,6 +30,7 @@ class Verdict:
     topic: str  # pulse | compression | codebook | frontier | onchain
     layers: list[str]  # ['L4', 'L5'] etc
     reason: str
+    transient_fail: bool = False  # True = don't persist to DB, retry next run
 
 
 def score(post: Post, handle: Handle | None) -> Verdict:
@@ -82,7 +86,9 @@ def _parse(raw: str, post: Post) -> Verdict:
         return Verdict(False, 0, "pulse", [], "empty claude response")
     m = _JSON_RE.search(raw)
     if not m:
-        return Verdict(False, 0, "pulse", [], f"no json in response: {raw[:80]}")
+        reason = f"no json in response: {raw[:80]}"
+        is_transient = any(e in raw for e in _TRANSIENT_ERRORS)
+        return Verdict(False, 0, "pulse", [], reason, transient_fail=is_transient)
     try:
         j = json.loads(m.group(0))
     except json.JSONDecodeError as e:
