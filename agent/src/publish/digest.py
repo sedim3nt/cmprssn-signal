@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from ..store import Post
+from .format import _signature
 
 TOPIC_EMOJI = {
     "pulse": "📡",
@@ -52,6 +53,8 @@ def build_run_digest(stats: dict, selected: list[tuple]) -> str:
             lines.append(f"     {_truncate(p.text, 120)}")
             lines.append(f"     {p.url}")
 
+    lines.append("")
+    lines.append(_signature())
     return "\n".join(lines)
 
 
@@ -84,4 +87,6 @@ def build_window_digest(rows: list, label: str) -> str:
             lines.append(f"     {_truncate(r['text'], 120)}")
             lines.append(f"     {r['url']}")
 
+    lines.append("")
+    lines.append(_signature())
     return "\n".join(lines)

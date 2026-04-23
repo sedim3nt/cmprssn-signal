@@ -1,7 +1,15 @@
 """Telegram post formatter."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from ..store import Post
+
+
+def _signature() -> str:
+    now = datetime.now(timezone.utc)
+    ts = now.strftime("%b %-d %-I:%M") + now.strftime("%p").lower() + " UTC"
+    return f"— SignalCl · {ts}"
 
 THREAD_EMOJI = {
     "pulse": "📡",
@@ -33,7 +41,7 @@ def render(post: Post, topic: str, layers: list[str]) -> str:
     if l_tag:
         footer += f"\nL: {l_tag}"
 
-    return f"{header}\n\n{body}\n\n{footer}"
+    return f"{header}\n\n{body}\n\n{footer}\n\n{_signature()}"
 
 
 def _k(n: int) -> str:
